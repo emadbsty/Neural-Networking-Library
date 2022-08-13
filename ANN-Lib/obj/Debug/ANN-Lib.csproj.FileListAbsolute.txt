@@ -2,4 +2,3 @@ D:\ANN\ANN-Lib\ANN-Lib\bin\Debug\ANN-Lib.dll
 D:\ANN\ANN-Lib\ANN-Lib\bin\Debug\ANN-Lib.pdb
 D:\ANN\ANN-Lib\ANN-Lib\obj\Debug\ANN-Lib.dll
 D:\ANN\ANN-Lib\ANN-Lib\obj\Debug\ANN-Lib.pdb
-D:\ANN\ANN-Lib\ANN-Lib\obj\Debug\ANN-Lib.csprojResolveAssemblyReference.cache

@@ -10,25 +10,7 @@ namespace ANN_Lib
     // This Neural Network Library Devloped by Emad Bsty Syria +963988553257
     // 
    
-    public class Neural
-    {
-        public float[] w;
-        public float bias;
-        public float Error;
-        public float net;
-        public float y;
-        static Random rand = new Random();
-
-        public Neural(int inputs)
-        {
-            w = new float[inputs];
-            for (int i = 0; i < inputs; i++)
-            {
-                w[i] = ((float)rand.Next(-1000, 1000) / 2000.0f);
-            }
-            bias = ((float)rand.Next(0, 2000) / 2000.0f);
-        }
-    }
+   
     public class ANN
     {
         //ANN(InputsX,Hidden Neurals,Output Neurals)
@@ -126,55 +108,28 @@ namespace ANN_Lib
         {
             return (1.0f / (1.0f + (float)Math.Exp(-xx)));
         }
-    }
+        public class Neural
+        {
+            public float[] w;
+            public float bias;
+            public float Error;
+            public float net;
+            public float y;
+            static Random rand = new Random();
 
-    public class SOM_Nodes
-    {
-        private float[] w;
-        private Point loc;
-        private float distance;
-        private Color c;
-        static Random rand = new Random();
-
-        public Point Location
-        {
-            get { return loc; }
-            set { loc = value; }
-        }
-        public Color color
-        {
-            get { return c; }
-            set { c = value; }
-        }
-        public float Distance
-        {
-            get { return distance; }
-            set { distance = value; }
-        }
-        public float[] Weights
-        {
-            get { return w; }
-            set { w = value;}
-        }
-        public SOM_Nodes(Point loc,int inputSize)
-        {
-            this.w = new float[inputSize];
-            this.loc = loc;
-            for (int i = 0; i < w.Length; i++)
+            public Neural(int inputs)
             {
-                w[i] = (float)rand.NextDouble() / 2.0f;
+                w = new float[inputs];
+                for (int i = 0; i < inputs; i++)
+                {
+                    w[i] = ((float)rand.Next(-1000, 1000) / 2000.0f);
+                }
+                bias = ((float)rand.Next(0, 2000) / 2000.0f);
             }
         }
-        public float Distance_Clac(float[] inputs)
-        {
-            float dis = 0.0f;
-            for (int i = 0; i < inputs.Length; i++)
-            {
-                dis = ((inputs[i] - this.w[i]) * (inputs[i] - this.w[i]));
-            }
-            return (float)Math.Sqrt(dis);
-        }
     }
+
+ 
     public class SOM_Network
     {
         public Point dimension;
@@ -278,6 +233,53 @@ namespace ANN_Lib
             }
             return b;
         }
+        public class SOM_Nodes
+        {
+            private float[] w;
+            private Point loc;
+            private float distance;
+            private Color c;
+            static Random rand = new Random();
+
+            public Point Location
+            {
+                get { return loc; }
+                set { loc = value; }
+            }
+            public Color color
+            {
+                get { return c; }
+                set { c = value; }
+            }
+            public float Distance
+            {
+                get { return distance; }
+                set { distance = value; }
+            }
+            public float[] Weights
+            {
+                get { return w; }
+                set { w = value; }
+            }
+            public SOM_Nodes(Point loc, int inputSize)
+            {
+                this.w = new float[inputSize];
+                this.loc = loc;
+                for (int i = 0; i < w.Length; i++)
+                {
+                    w[i] = (float)rand.NextDouble() / 2.0f;
+                }
+            }
+            public float Distance_Clac(float[] inputs)
+            {
+                float dis = 0.0f;
+                for (int i = 0; i < inputs.Length; i++)
+                {
+                    dis = ((inputs[i] - this.w[i]) * (inputs[i] - this.w[i]));
+                }
+                return (float)Math.Sqrt(dis);
+            }
+        }
     }
     public class CNN
     {
@@ -350,13 +352,27 @@ namespace ANN_Lib
                     aux[j, i] = -1.0f;
                 }
             }
-            for (int i = 0; i < image.GetLength(0); i++)
+            for (int i = Pad; i < aux.GetLength(1) - Pad; i++)
             {
-                for (int j = 0; j < image.GetLength(1); j++)
+                for (int j = Pad; j < aux.GetLength(0) - Pad; j++)
                 {
-                    aux[i + Pad, j + Pad] = image[i, j];
+                    aux[j, i] = image[j - Pad, i - Pad];
                 }
             }
+            return aux;
+        }
+        public float[,] RemovePadding(float[,] image, int Pad)
+        {
+            float[,] aux = new float[image.GetLength(0) - 2 * Pad, image.GetLength(1) - 2 * Pad];
+
+            for (int i = 0; i < aux.GetLength(1); i++)
+            {
+                for (int j = 0; j < aux.GetLength(0); j++)
+                {
+                    aux[j, i] = image[j + Pad, i + Pad];
+                }
+            }
+
             return aux;
         }
     }
