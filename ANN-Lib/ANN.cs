@@ -18,8 +18,8 @@ namespace ANN_Lib
         public List<Neural[]> HN;
         public Neural[] ON;
         private double learnRate;
-        ActivationFunction haf;
-        ActivationFunction oaf;
+        public ActivationFunction haf;
+        public ActivationFunction oaf;
         public double learnrate
         {
             get { return learnRate; }
@@ -29,6 +29,8 @@ namespace ANN_Lib
         {
             Sigmoid,
             ReLU,
+            TanH,
+            SoftMax,
         }
         public ANN(int x, int[] h, ActivationFunction haf, int o, ActivationFunction oaf)
         {
@@ -72,10 +74,15 @@ namespace ANN_Lib
                     //ReLU
                     ON[i].Error = DerivatReLU(ON[i].y) * (Target[i] - ON[i].y);
                 }
-                else
+                else if (oaf == ActivationFunction.Sigmoid)
                 {
                     // Segmoid
                     ON[i].Error = ON[i].y * (1.0f - ON[i].y) * (Target[i] - ON[i].y);
+                }
+                else if (oaf == ActivationFunction.TanH)
+                {
+                    // TanH
+                    ON[i].Error = DerivatTanh(ON[i].y) * (Target[i] - ON[i].y); ;
                 }
             }
             for (int i = 0; i < HN[HN.Count - 1].Length; i++)
@@ -90,10 +97,15 @@ namespace ANN_Lib
                     //ReLU
                     HN[HN.Count - 1][i].Error = HN[HN.Count - 1][i].Error * DerivatReLU(HN[HN.Count - 1][i].y);
                 }
-                else
+                else if (haf == ActivationFunction.Sigmoid)
                 {
                     // Segmoid
                     HN[HN.Count - 1][i].Error = HN[HN.Count - 1][i].Error * HN[HN.Count - 1][i].y * (1.0f - HN[HN.Count - 1][i].y);
+                }
+                else if (haf == ActivationFunction.TanH)
+                {
+                    // TanH
+                    HN[HN.Count - 1][i].Error = HN[HN.Count - 1][i].Error * DerivatTanh(HN[HN.Count - 1][i].y);
                 }
             }
             for (int k = HN.Count - 2; k >= 0; k--)
@@ -110,10 +122,15 @@ namespace ANN_Lib
                         //ReLU
                         HN[k][i].Error = HN[k][i].Error * DerivatReLU(HN[k][i].y);
                     }
-                    else
+                    else if (haf == ActivationFunction.Sigmoid)
                     {
                         // Segmoid
                         HN[k][i].Error = HN[k][i].Error * HN[k][i].y * (1.0f - HN[k][i].y);
+                    }
+                    else if (haf == ActivationFunction.TanH)
+                    {
+                        // TanH
+                        HN[k][i].Error = HN[k][i].Error * DerivatTanh(HN[k][i].y);
                     }
                 }
             }
@@ -166,10 +183,15 @@ namespace ANN_Lib
                     //ReLU
                     HN[0][i].y = ReLU(aux);
                 }
-                else
+                else if (haf == ActivationFunction.Sigmoid)
                 {
                     // Segmoid
                     HN[0][i].y = sigmoid(aux);
+                }
+                else if (haf == ActivationFunction.TanH)
+                {
+                    // TanH
+                    HN[0][i].y = Tanh(aux);
                 }
             }
             //*******************************************
@@ -189,11 +211,17 @@ namespace ANN_Lib
                         //ReLU
                         HN[k][i].y = ReLU(aux);
                     }
-                    else
+                    else if (haf == ActivationFunction.Sigmoid)
                     {
                         // Segmoid
                         HN[k][i].y = sigmoid(aux);
                     }
+                    else if (haf == ActivationFunction.TanH)
+                    {
+                        // TanH
+                        HN[k][i].y = Tanh(aux);
+                    }
+
                 }
             }
 
@@ -213,10 +241,15 @@ namespace ANN_Lib
                     //ReLU
                     ON[j].y = ReLU(aux);
                 }
-                else
+                else if (oaf == ActivationFunction.ReLU)
                 {
                     // Segmoid
                     ON[j].y = sigmoid(aux);
+                }
+                else if (haf == ActivationFunction.TanH)
+                {
+                    // TanH
+                    ON[j].y = Tanh(aux);
                 }
                 yy[j] = ON[j].y;
             }
@@ -231,16 +264,26 @@ namespace ANN_Lib
         {
             return (sigmoid(xx) * (1.0d - sigmoid(xx)));
         }
-        double aux = 0.02d;
+        double aux = 0.0d;
         public double ReLU(double xx)
         {
-            if (xx > 0.0) return xx;
-            else return (aux * xx);
+            //if (xx > 0.0) return xx;
+            //else return (aux * xx);
+            return xx;
         }
         public double DerivatReLU(double xx)
         {
-            if (xx > 0.0) return 1.0d;
-            else return aux;
+            //if (xx > 0.0) return 1.0d;
+            //else return aux;
+            return 1.0d;
+        }
+        public double Tanh(double x)
+        {
+            return ((Math.Exp(x) - Math.Exp(-x)) / (Math.Exp(x) + Math.Exp(-x)));
+        }
+        public double DerivatTanh(double x)
+        {
+            return (1.0d - (Tanh(x) * Tanh(x)));
         }
         public double[] SoftMax(double[] arr)
         {
@@ -313,7 +356,7 @@ namespace ANN_Lib
         }
     }
 
- 
+
     public class SOM_Network
     {
         public Point dimension;
@@ -331,7 +374,7 @@ namespace ANN_Lib
             for (int i = 0; i < dimension.Y; i++)
             {
                 for (int j = 0; j < dimension.X; j++)
-                {                    
+                {
                     nodes[j, i] = new SOM_Nodes(new Point(j, i), inputSize);
                 }
             }
@@ -359,7 +402,7 @@ namespace ANN_Lib
             {
                 for (int j = 0; j < dimension.X; j++)
                 {
-                    if(nodes[j, i].Distance < min_dis)
+                    if (nodes[j, i].Distance < min_dis)
                     {
                         min_dis = nodes[j, i].Distance;
                         node = nodes[j, i];
@@ -382,7 +425,15 @@ namespace ANN_Lib
                 nodes[neighboring[i].X, neighboring[i].Y].color = Color.FromArgb((int)nodes[neighboring[i].X, neighboring[i].Y].Weights[0], (int)nodes[neighboring[i].X, neighboring[i].Y].Weights[1], (int)nodes[neighboring[i].X, neighboring[i].Y].Weights[2]);
             }
         }
-        public List<Point> Get_neighboring(SOM_Nodes BMU,int radius)
+        public void UpdateOne(Point neighboring, Color inputs, float lr)
+        {
+            nodes[neighboring.X, neighboring.Y].Weights[0] = nodes[neighboring.X, neighboring.Y].Weights[0] + lr * (inputs.R - nodes[neighboring.X, neighboring.Y].Weights[0]);
+            nodes[neighboring.X, neighboring.Y].Weights[1] = nodes[neighboring.X, neighboring.Y].Weights[1] + lr * (inputs.G - nodes[neighboring.X, neighboring.Y].Weights[1]);
+            nodes[neighboring.X, neighboring.Y].Weights[2] = nodes[neighboring.X, neighboring.Y].Weights[2] + lr * (inputs.B - nodes[neighboring.X, neighboring.Y].Weights[2]);
+            nodes[neighboring.X, neighboring.Y].color = Color.FromArgb((int)nodes[neighboring.X, neighboring.Y].Weights[0], (int)nodes[neighboring.X, neighboring.Y].Weights[1], (int)nodes[neighboring.X, neighboring.Y].Weights[2]);
+
+        }
+        public List<Point> Get_neighboring(SOM_Nodes BMU, int radius)
         {
             List<Point> pp = new List<Point>();
             Point aux;
@@ -394,19 +445,44 @@ namespace ANN_Lib
                     int YY = BMU.Location.Y + i;
 
                     if (XX >= this.dimension.X)
-                        XX = dimension.X -1;
+                        break;
                     if (XX < 0)
-                        XX = 0;
+                        break;
                     if (YY >= this.dimension.Y)
-                        YY = dimension.Y -1;
+                        break;
                     if (YY < 0)
-                        YY = 0;
+                        break;
+
                     aux = new Point(XX, YY);
-                    if(!FindInList(pp,aux))
+                    if (!FindInList(pp, aux))
                         pp.Add(aux);
                 }
             }
             return pp;
+        }
+        public void Get_neighboring_Update(SOM_Nodes BMU, Color inputs, int radius, double factor)
+        {
+            Point aux;
+            for (int i = -radius; i <= radius; i++)
+            {
+                for (int j = -radius; j <= radius; j++)
+                {
+                    int XX = BMU.Location.X + j;
+                    int YY = BMU.Location.Y + i;
+
+                    if (XX >= this.dimension.X)
+                        break;
+                    if (XX < 0)
+                        break;
+                    if (YY >= this.dimension.Y)
+                        break;
+                    if (YY < 0)
+                        break;
+                    double ra = Math.Sqrt((i * i) + (j * j));
+                    float lr = learningRate * (float)Math.Exp((float)(-ra) / (float)(factor * radius));
+                    aux = new Point(XX, YY); UpdateOne(aux, inputs, lr);
+                }
+            }
         }
         public bool FindInList(List<Point> pp, Point p)
         {
